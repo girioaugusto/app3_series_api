@@ -1,22 +1,48 @@
+import 'package:app3_series_api/tv_show_service.dart';
 import 'package:flutter/material.dart';
 
 class TvShow {
-  String title;
-  String stream;
-  int rating;
+  int id;
+  String imageUrl;
+  String name;
+  String webChannel;
+  double rating;
   String summary;
 
   TvShow({
-    required this.title,
-    required this.stream,
+    required this.id,
+    required this.imageUrl,
+    required this.name,
+    required this.webChannel,
     required this.rating,
     required this.summary,
   });
+
+  factory TvShow.fromJson(Map<String, dynamic> json) {
+    return TvShow(
+      id: json['id'],
+      imageUrl: json['image']?['medium'] ?? '',
+      name: json['name'],
+      webChannel: json['webChannel']?['name'] ?? 'N/A',
+      rating: json['rating']?['average']?.toDouble() ?? 0.0,
+      summary: json['summary'] ?? 'Sem resumo disponível',
+    );
+  }
 }
 
 class TvShowModel extends ChangeNotifier {
+  final TvShowService _tvShowService = TvShowService();
+
   final List<TvShow> _tvShows = [];
   List<TvShow> get tvShows => _tvShows;
+
+  Future<List<TvShow>> searchTvShows(String querry) async {
+    try {
+      return await _tvShowService.fetchTvShows(querry);
+    } catch (e) {
+      throw Exception('Falha em buscar séries: ${e.toString()}');
+    }
+  }
 
   void addTvShow(TvShow tvShow, BuildContext context) {
     tvShows.add(tvShow);
@@ -34,13 +60,13 @@ class TvShowModel extends ChangeNotifier {
 
   void removeTvShow(TvShow tvShow, BuildContext context) {
     final index = tvShows.indexWhere(
-      (show) => show.title.toLowerCase() == tvShow.title.toLowerCase(),
+      (show) => show.name.toLowerCase() == tvShow.name.toLowerCase(),
     );
     tvShows.removeAt(index);
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${tvShow.title} excluída!'),
+        content: Text('${tvShow.name} excluída!'),
         duration: Duration(seconds: 3),
         action: SnackBarAction(
           label: 'DESFAZER',
