@@ -90,20 +90,31 @@ class _TvShowGridState extends State<TvShowGrid> {
                 ),
               ),
             ),
-            tvShowModel.tvShows.any((show) => show.id == tvShow.id)
-                ? Positioned(
-                    child: IconButton(
-                      onPressed: () =>
-                          tvShowModel.removeTvShow(tvShow, context),
-                      icon: Icon(Icons.favorite, size: 32, color: Colors.red),
+            FutureBuilder<bool>(
+              future: tvShowModel.isFavorite(tvShow),
+              builder: (context, snapshot) {
+                final isFavorite = snapshot.data ?? false;
+
+                return Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      size: 32,
+                      color: isFavorite ? Colors.red : null,
                     ),
-                  )
-                : Positioned(
-                    child: IconButton(
-                      onPressed: () => tvShowModel.addTvShow(tvShow, context),
-                      icon: Icon(Icons.favorite_border_sharp, size: 32),
-                    ),
+                    onPressed: () {
+                      if (isFavorite) {
+                        tvShowModel.removeFromFavorites(tvShow);
+                      } else {
+                        tvShowModel.addToFavorites(tvShow);
+                      }
+                    },
                   ),
+                );
+              },
+            ),
           ],
         );
       },
